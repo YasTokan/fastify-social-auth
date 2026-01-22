@@ -12,7 +12,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "fastify": "^5.7.1"
+    "@fastify/jwt": "^10.0.0",
+    "dotenv": "^17.2.3",
+    "fastify": "^5.7.1",
+    "fastify-plugin": "^5.1.0",
+    "mongoose": "^9.1.5"
   },
   "devDependencies": {
     "@types/node": "^25.0.10",
