@@ -1,0 +1,22 @@
+{
+  "name": "fastify-social-auth",
+  "version": "1.0.0",
+  "description": "Fastify Social Auth is a minimal, production-ready starter for building authentication with Fastify and Firebase. It provides seamless Firebase Authentication integration plus configurable third‑party OAuth sign-in (Google, Facebook, GitHub, and others), secure session/JWT handling, and example routes and middleware to get you up and running.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^5.7.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.10",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
