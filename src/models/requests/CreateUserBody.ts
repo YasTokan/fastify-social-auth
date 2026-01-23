@@ -7,3 +7,13 @@ export type CreateUserBody = {
   gender?: string;
   avatar?: string;
 };
+
+export type ListQuery = {
+  page?: number;  // default 1
+  limit?: number; // default 20
+};
+
+export type FirebaseAuth = {
+  idToken: string;
+};
+

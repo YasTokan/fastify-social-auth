@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { AuthController } from "../controllers/auth.controller";
-import { CreateUserBody } from "../models/requests/CreateUserBody";
+import { CreateUserBody, FirebaseAuth, ListQuery } from "../models/requests/CreateUserBody";
+import { request } from "https";
 
 
 export async function mainRoutes(app: FastifyInstance) {
@@ -8,13 +9,16 @@ export async function mainRoutes(app: FastifyInstance) {
 }
 
 export async function authRoutes(app: FastifyInstance) {
+    const authController = new AuthController();
+
     app.post<{ Body: CreateUserBody }>("/login", async (request, reply) => {
-        const authController = new AuthController();
         return authController.login(request, reply);
     });
-    app.get("/users", { preHandler: [app.authenticate] }, async () => {
-        return [{ id: 1, name: "Alice" }];
+
+    app.post<{ Body: CreateUserBody }>("/register", async (request, reply) => {
+        return authController.register(request, reply);
     });
+
 
     app.post<{ Body: CreateUserBody }>("/users", async (request, reply) => {
         const { name } = request.body;
@@ -22,5 +26,12 @@ export async function authRoutes(app: FastifyInstance) {
             return reply.code(400).send({ error: "name is required" });
         }
         return reply.code(201).send({ id: 2, name });
+    });
+    app.get<{ Querystring: ListQuery }>("/users", { preHandler: [app.authenticate] }, async (request, reply) => {
+        return authController.listUsers(request, reply);
+    });
+
+    app.post<{ Body: FirebaseAuth }>("/firebaseAuth", async (request, reply) => {
+        return authController.firebaseAuth(request, reply);
     });
 }

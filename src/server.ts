@@ -5,12 +5,17 @@ import { connectDB } from "./middleware/db.confing";
 import dotenv from "dotenv";
 import jwtPlugin from "./plugins/jwt.plugin";
 import authPlugin from "./plugins/auth.plugin";
+import firebasePlugin from "./plugins/firebase.plugin";
+
+// ... after dotenv.config()
+
 
 dotenv.config();
 const buildServer = (): FastifyInstance => {
     const app = fastify({ logger: true });
     app.register(jwtPlugin);
     app.register(authPlugin);
+    app.register(firebasePlugin);
 
     app.register(mainRoutes);
     app.register(authRoutes, { prefix: "/auth" });
