@@ -3,13 +3,15 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IUser extends Document {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   age?: number;
   language?: string;
   gender?: string;
   avatar?: string;
+  firebaseUid?: string;
   createdAt: Date;
   updatedAt: Date;
+  authProvider?: string;
 }
 
 const UserSchema: Schema<IUser> = new Schema(

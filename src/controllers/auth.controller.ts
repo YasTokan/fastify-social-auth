@@ -70,10 +70,10 @@ export class AuthController {
             users
         });
     }
-
-    async firebaseAuth(request: FastifyRequest<{ Body: FirebaseAuth }>, reply: FastifyReply) {
-        // Implement Firebase authentication logic here
-
+    async firebaseAuth(
+        request: FastifyRequest<{ Body: FirebaseAuth }>,
+        reply: FastifyReply
+    ) {
         const { idToken } = request.body;
 
         if (!idToken) {
@@ -81,22 +81,58 @@ export class AuthController {
         }
 
         const app = request.server as FastifyInstance;
-        // ✅ Verify Firebase ID token (Google/Facebook/Apple sign-in result)
-        const decoded = await app.firebase.auth().verifyIdToken(idToken);
 
-        // decoded.uid is the Firebase user id
-        // decoded.email may exist depending on provider / scopes
-        const payload = {
-            firebaseUid: decoded.uid,
-            email: decoded.email,
-            name: decoded.name
-        };
+        let decoded;
+        try {
+            decoded = await app.firebase.auth().verifyIdToken(idToken);
+        } catch (err) {
+            request.log.warn({ err }, "Invalid Firebase token");
+            return reply.code(401).send({ error: "Invalid or expired token" });
+        }
 
-        // ✅ Issue YOUR API token (JWT)
-        const token = app.jwt.sign(payload);
+        const firebaseUid = decoded.uid;
+        const email = decoded.email ?? null;
+        const name = decoded.name ?? decoded.displayName ?? null;
 
-        return reply.send({ token, user: payload });
+        // Prefer firebaseUid as the primary key
+        // Make sure you have a unique index on firebaseUid in Mongo
+        const user = await UserModel.findOneAndUpdate(
+            { firebaseUid },
+            {
+                $setOnInsert: {
+                    firebaseUid,
+                    authProvider: "firebase",
+                    createdAt: new Date(),
+                },
+                $set: {
+                    // Keep profile info updated if it exists
+                    ...(email ? { email } : {}),
+                    ...(name ? { name } : {}),
+                    lastLoginAt: new Date(),
+                },
+            },
+            { upsert: true, new: true }
+        );
 
+        // Issue YOUR API token (keep JWT small)
+        const apiToken = app.jwt.sign(
+            {
+                sub: user._id.toString(),
+                firebaseUid: user.firebaseUid,
+                email: user.email 
+            },
+            { expiresIn: "1h" } // example
+        );
+
+        return reply.send({
+            token: apiToken,
+            user: {
+                id: user._id,
+                firebaseUid: user.firebaseUid,
+                email: user.email,
+                name: user.name 
+            },
+        });
     }
 
 }
